@@ -32,17 +32,17 @@ func InitApiServer() (err error) {
 		fmt.Println(err)
 		return
 	}
-
+	
+	// 路由
+	mux = http.NewServeMux()
+	mux.HandleFunc("/job/save", handleJobSave)
+	
 	// 创建HTTP服务
 	httpServer = &http.Server{
 		Handler:      mux,
 		ReadTimeout:  time.Duration(G_config.ApiReadTimeout) * time.Millisecond,
 		WriteTimeout: time.Duration(G_config.ApiWriteTimeout) * time.Millisecond,
 	}
-
-	// 路由
-	mux = http.NewServeMux()
-	mux.HandleFunc("/job/save", handleJobSave)
 
 	// 赋值单例
 	G_apiServer = &ApiServer{httpServer: httpServer}
@@ -66,7 +66,7 @@ func handleJobSave(w http.ResponseWriter, r *http.Request) {
 	)
 	// 1, 解析post表单
 	if err = r.ParseForm(); err != nil {
-		return
+		goto ERR
 	}
 
 	// 2, 取job字段
@@ -74,12 +74,12 @@ func handleJobSave(w http.ResponseWriter, r *http.Request) {
 
 	// 3, 反序列化
 	if err = json.Unmarshal([]byte(postJob), &job); err != nil {
-		return
+		goto ERR
 	}
 
 	// 4, 保存
 	if oldJob, err = G_jobMgr.SaveJob(&job); err != nil {
-		return
+	    goto ERR
 	}
 
 	// 5, 正常应答
@@ -87,9 +87,11 @@ func handleJobSave(w http.ResponseWriter, r *http.Request) {
 		goto ERR
 	}
 	w.Write(bytes)
+	return
 
 ERR:
 	if bytes, err = common.BuildResponse(-1, err.Error(), nil); err != nil {
+		fmt.Println("errrrr")
 		w.Write(bytes)
 	}
 
