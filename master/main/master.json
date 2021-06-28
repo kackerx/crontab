@@ -1,0 +1,12 @@
+{
+  "API服务端接口": "提供任务CRUD",
+  "apiPort": 8070,
+  "API读超时": "毫秒",
+  "apiReadTimeout": 5000,
+  "API写超时": "毫秒",
+  "apiWriteTimeout": 5000,
+  "ETCD集群列表": "配置多个, 避免单点故障",
+  "etcdEndPoints": ["127.0.0.1:2379"],
+  "ETCD连接超时": "毫秒",
+  "etcdDialTimeout": 5000
+}
