@@ -36,3 +36,9 @@ func BuildResponse(errno int, msg string, data interface{}) (resp []byte, err er
 	return
 }
 
+
+//{
+//	"name": "job2",
+//	"command": "echo hello",
+//	"cronExpr": "*/5 * * * *"
+//}
