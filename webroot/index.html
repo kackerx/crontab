@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Crontab操作台</title>
+        <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+        <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+        <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    </head>
+    <body>
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="page-header">
+                        <h1>管理后台<small>分布式Crontab</small></h1>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#edit-modal">新建任务</button>
+                </div>
+            </div>
+
+            <div class="row" style="margin-top: 20px">
+                <div class="col-md-12">
+                    <div class="panel panel-default">
+                        <div class="panel-body">
+                            <table id="list" class="table table-striped">
+                                <thead>
+                                <tr>
+                                    <th>任务名称</th>
+                                    <th>shell命令</th>
+                                    <th>cron表达式</th>
+                                    <th>操作</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr>
+                                    <td class="name">job</td>
+                                    <td class="command">comman</td>
+                                    <td class="cron">cron</td>
+                                    <td>
+                                        <div class="btn-toolbar">
+<!--                                            <button class="btn btn-primary btn-lg" data-toggle="modal" data-target="#myModal">编辑</button>-->
+                                            <!--                                            <button class="btn btn-info edit">编辑</button>-->
+<!--                                            <button class="btn btn-danger delete">删除</button>-->
+<!--                                            <button class="btn btn-warning kill">强杀</button>-->
+<!--                                            <button class="btn btn-success log">日志</button>-->
+                                        </div>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 编辑框 -->
+        <div id="edit-modal" class="modal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Modal title</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form>
+                            <div class="form-group">
+                                <label for="edit-name">任务名称</label>
+                                <input type="text" class="form-control" id="edit-name" aria-describedby="emailHelp">
+                                <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="edit-command">shell表达式</label>
+                                <input type="text" class="form-control" id="edit-command">
+                            </div>
+                            <div class="form-group">
+                                <label for="edit-cron">cron表达式</label>
+                                <input type="text" class="form-control" id="edit-cron">
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal" id="edit-close">Close</button>
+                        <button type="button" class="btn btn-primary" id="edit-save">Save changes</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            $(document).ready(function () {
+                $("#list").on("click", ".edit", function (e) {
+                    var name = $(this).parents("tr").attr('id')
+                    var command = $(this).parents("tr").children(".command").text()
+                    var cron = $(this).parents("tr").children(".cron").text()
+                    $("#edit-name").val(name)
+                    $("#edit-command").val(command)
+                    $("#edit-cron").val(cron)
+                    // $("#edit-modal").modal("show")
+                })
+
+                $("#list").on("click", ".delete", function (e) {
+                    var name = $(this).parents("tr").attr('id')
+                    $.ajax({
+                        url: "/job/delete",
+                        type: "POST",
+                        dataType: "json",
+                        data: {"name": name},
+                        complete: function () {
+                            window.location.reload();
+                        }
+                    })
+                })
+
+                $("#list").on("click", ".kill", function (e) {
+                    var name = $(this).parents("tr").attr('id')
+                    $.ajax({
+                        url: "/job/kill",
+                        type: "POST",
+                        dataType: "json",
+                        data: {"name": name},
+                        success: function (data) {
+                            window.location.reload();
+                        }
+                    })
+                })
+            })
+
+            $("#edit-save").on("click", function () {
+                var jobInfo = {
+                    name: $("#edit-name").val(),
+                    cronExpr: $("#edit-cron").val(),
+                    command: $("#edit-command").val(),
+                }
+                $.ajax({
+                    url: "/job/save",
+                    type: "POST",
+                    dataType: "json",
+                    data: {"job": JSON.stringify(jobInfo)},
+                    success: function (data) {
+                        window.location.reload();
+                    }
+                })
+            })
+            // $("#edit-close").on("click", function () {
+            //     $('#edit-modal').modal('hide')
+            // })
+
+            function sendReq() {
+                $.ajax({
+                    url: "/job/list",
+                    dataType: "json",
+                    success: function (data) {
+                        if (data.errno != 0) return
+                        const jobList = data.data;
+                        $('#list tbody').empty();
+                        for (var i = 0; i < jobList.length; i++) {
+                            var job = jobList[i];
+                            var tr = $('<tr>').attr("id", job.name)
+                            tr.append($('<td class="name">').html(job.name))
+                            tr.append($('<td class="command">').html(job.command))
+                            tr.append($('<td class="cron">').html(job.cronExpr))
+                            //
+                            var toolbar = $('<div class="btn-toolbar">')
+                                // .append($('<button class="btn btn-info edit">编辑</button>'))
+                                .append($('<button class="btn btn-primary edit" data-toggle="modal" data-target="#edit-modal">编辑</button>'))
+                                .append($('<button class="btn btn-danger delete">删除</button>'))
+                                .append($('<button class="btn btn-warning kill">强杀</button>'))
+                                .append($('<button class="btn btn-success log">日志</button>'))
+                            tr.append($('<td>').append(toolbar))
+                            $('#list tbody').append(tr)
+                        }
+                    }
+                })
+            }
+
+            sendReq()
+        </script>
+
+    </body>
+</html>

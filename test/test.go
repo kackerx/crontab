@@ -1,32 +1,32 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
+	"sync"
 )
 
-type Test struct {
+type Student struct {
 	Name string
+	Age  int
+}
+
+var once sync.Once
+var s Student
+
+func New() *Student {
+	once.Do(func() {
+		s = Student{
+			Name: "kacker",
+			Age:  10,
+		}
+	})
+	return &s
 }
 
 func main() {
-	t := Test{Name: "kacker"}
-	fmt.Println(t.Name)
-	s := `
-{
-	"name": "kacker", 
-	"age": "24"
-}
-`
-	m := make(map[string]string)
-	if err := json.Unmarshal([]byte(s), &m); err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println(m)
-	test("kacker", 24)
-}
+	s := New()
+	a := New()
 
-// test 颜色
-func test(name string, age int) string {
-	return name
+	fmt.Printf("%p\n", s)
+	fmt.Printf("%p\n", a)
 }

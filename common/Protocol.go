@@ -16,11 +16,6 @@ type Response struct {
 	Data  interface{} `json:"data"`
 }
 
-type Requests struct {
-	Name string
-	Age  int
-}
-
 // 应答方法
 func BuildResponse(errno int, msg string, data interface{}) (resp []byte, err error) {
 	// 1, 定义response
@@ -30,12 +25,11 @@ func BuildResponse(errno int, msg string, data interface{}) (resp []byte, err er
 	response.Data = data
 	response.Msg = msg
 	response.Errno = errno
-	
+
 	// 2, 序列化
 	resp, err = json.Marshal(response)
 	return
 }
-
 
 //{
 //	"name": "job2",

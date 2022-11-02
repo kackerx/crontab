@@ -4,17 +4,12 @@ import (
 	"flag"
 	"fmt"
 	"github.com/kackerx/crontab/master"
-	"runtime"
 	"time"
 )
 
 var (
 	confFile string // 配置文件路径
 )
-
-func initEnv() {
-	runtime.GOMAXPROCS(runtime.NumCPU())
-}
 
 func initArgs() {
 	flag.StringVar(&confFile, "config", "./master.json", "配置文件路径")
@@ -25,9 +20,6 @@ func main() {
 	var (
 		err error
 	)
-
-	// 初始化线程
-	initEnv()
 
 	// 加载配置
 	initArgs()

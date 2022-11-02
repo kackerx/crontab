@@ -1,0 +1,8 @@
+etcd:
+  endpoints:
+    "127.0.0.1:2379"
+  timeout: 5000
+
+mongodb:
+  uri: "mongodb://127.0.0.1:27017" # st
+  timeout: 5000
